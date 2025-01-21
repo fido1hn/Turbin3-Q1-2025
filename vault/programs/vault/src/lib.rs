@@ -23,6 +23,11 @@ pub mod vault {
         ctx.accounts.withdraw(amount)?;
         Ok(())
     }
+
+    pub fn close_vault(ctx: Context<CloseVault>) -> Result<()> {
+        ctx.accounts.close_vault()?;
+        Ok(())
+    }
 }
 
 #[account]
@@ -122,6 +127,40 @@ impl<'info> Withdraw<'info> {
         assert!(self.vault.lamports() >= amount);
 
         transfer(cpi_ctx, amount)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct CloseVault<'info> {
+    #[account(mut)]
+    signer: Signer<'info>,
+    #[account(
+        seeds = [b"state", signer.key().as_ref()],
+        bump = vault_state.state_bump, // how can this be available here before the account is derived
+    )]
+    pub vault_state: Account<'info, VaultState>,
+    #[account(
+        mut,
+        seeds=[vault_state.key().as_ref()],
+        bump = vault_state.vault_bump,
+    )]
+    pub vault: SystemAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+impl<'info> CloseVault<'info> {
+    pub fn close_vault(&mut self) -> Result<()> {
+        let vault = &mut self.vault;
+        let signer = &mut self.signer;
+
+        // Transfer all the lamports to the signer
+        let lamports = **vault.to_account_info().lamports.borrow();
+        **vault.to_account_info().lamports.borrow_mut() = 0;
+        **signer.to_account_info().lamports.borrow_mut() += lamports;
+
+        msg!("Vault account closed successfully, and lamports transferred to the signer");
 
         Ok(())
     }
