@@ -17,4 +17,18 @@ pub mod escrow {
 
         Ok(())
     }
+
+    pub fn take(ctx: Context<Take>) -> Result<()> {
+        ctx.accounts.withdraw()?;
+        ctx.accounts.close()?;
+
+        Ok(())
+    }
+
+    pub fn refund(ctx: Context<Refund>) -> Result<()> {
+        ctx.accounts.withdraw()?;
+        ctx.accounts.close()?;
+
+        Ok(())
+    }
 }
