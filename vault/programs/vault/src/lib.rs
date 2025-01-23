@@ -49,7 +49,10 @@ pub struct Initialize<'info> {
         bump
     )]
     pub vault_state: Account<'info, VaultState>,
-    #[account(seeds=[vault_state.key().as_ref()], bump)]
+    #[account(
+        seeds=[vault_state.key().as_ref()], 
+        bump
+    )]
     pub vault: SystemAccount<'info>,
     pub system_program: Program<'info, System>,
 }
@@ -106,6 +109,7 @@ pub struct Withdraw<'info> {
     )]
     pub vault_state: Account<'info, VaultState>,
     #[account(
+        mut,
         seeds=[vault_state.key().as_ref()],
         bump = vault_state.vault_bump,
     )]
@@ -137,8 +141,10 @@ pub struct CloseVault<'info> {
     #[account(mut)]
     signer: Signer<'info>,
     #[account(
+        mut,
         seeds = [b"state", signer.key().as_ref()],
         bump = vault_state.state_bump, // how can this be available here before the account is derived
+        close = signer,
     )]
     pub vault_state: Account<'info, VaultState>,
     #[account(
@@ -152,13 +158,23 @@ pub struct CloseVault<'info> {
 
 impl<'info> CloseVault<'info> {
     pub fn close_vault(&mut self) -> Result<()> {
-        let vault = &mut self.vault;
-        let signer = &mut self.signer;
+        let cpi_program = self.system_program.to_account_info();
 
-        // Transfer all the lamports to the signer
-        let lamports = **vault.to_account_info().lamports.borrow();
-        **vault.to_account_info().lamports.borrow_mut() = 0;
-        **signer.to_account_info().lamports.borrow_mut() += lamports;
+        let cpi_accounts = Transfer {
+            from: self.vault.to_account_info(),
+            to: self.signer.to_account_info(),
+        };
+
+        let seeds = &[
+            self.vault_state.to_account_info().key.as_ref(),
+            &[self.vault_state.vault_bump],
+        ];
+
+        let signer_seeds = &[&seeds[..]];
+
+        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+
+        transfer(cpi_ctx, self.vault.lamports())?;
 
         msg!("Vault account closed successfully, and lamports transferred to the signer");
 
