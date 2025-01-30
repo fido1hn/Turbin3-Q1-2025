@@ -128,7 +128,7 @@ impl<'info> Withdraw<'info> {
 
         let cpi_ctx = CpiContext::new(system_program, accounts);
 
-        assert!(self.vault.lamports() >= amount);
+        assert!(self.vault.lamports() >= amount); //check there is balance in the vault
 
         transfer(cpi_ctx, amount)?;
 
