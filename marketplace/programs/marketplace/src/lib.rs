@@ -25,4 +25,18 @@ pub mod marketplace {
         ctx.accounts.deposit_nft()?;
         Ok(())
     }
+
+    pub fn delist(ctx: Context<Delist>) -> Result<()> {
+        ctx.accounts.withdraw_nft()?;
+
+        Ok(())
+    }
+
+    pub fn purchase(ctx: Context<Purchase>) -> Result<()> {
+        ctx.accounts.send_sol()?;
+        ctx.accounts.send_nft()?;
+        ctx.accounts.close_mint_vault()?;
+
+        Ok(())
+    }
 }
