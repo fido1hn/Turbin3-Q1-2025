@@ -91,7 +91,7 @@ impl<'info> Withdraw<'info> {
             }
         };
 
-        require!(min_x <= x && min_y <= y, AmmError::SomeError);
+        require!(min_x <= x && min_y <= y, AmmError::LiquidityLessThanMinimum);
 
         self.withdraw_token(true, x)?;
         self.withdraw_token(false, y)?;

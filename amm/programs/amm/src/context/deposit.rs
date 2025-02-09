@@ -91,7 +91,7 @@ impl<'info> Deposit<'info> {
             }
         };
 
-        require!(x <= max_x && y <= max_y, AmmError::SomeError);
+        require!(x <= max_x && y <= max_y, AmmError::InsufficientBalance);
 
         self.deposit_token(true, x)?;
         self.deposit_token(false, y)?;
