@@ -6,6 +6,8 @@ pub use state::*;
 pub mod context;
 pub use context::*;
 
+pub mod errors;
+
 declare_id!("8NmUxrPJWzNRnWSzqA2T4FM7zPayr2kJxWLjYPY4e3aW");
 
 #[program]
