@@ -74,7 +74,7 @@ pub struct Stake<'info> {
 }
 
 impl<'info> Stake<'info> {
-    pub fn stake(&mut self, bumps: &StakeBumps) -> Result<()> {
+    pub fn stake(&mut self, bumps: StakeBumps) -> Result<()> {
         require!(self.user_account.amount_staked < self.config.max_stake, StakeErrors::MaxStakeReached);
 
         self.user_account.amount_staked += 1;
