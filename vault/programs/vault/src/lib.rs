@@ -75,6 +75,7 @@ pub struct Deposit<'info> {
     )]
     pub vault_state: Account<'info, VaultState>,
     #[account(
+        mut, // Marked the Vault as mutable since it state would change
         seeds=[vault_state.key().as_ref()],
         bump = vault_state.vault_bump,
     )]
@@ -126,9 +127,17 @@ impl<'info> Withdraw<'info> {
             to: self.signer.to_account_info(),
         };
 
-        let cpi_ctx = CpiContext::new(system_program, accounts);
+        let seeds = [
+            self.vault_state.to_account_info().key.as_ref(),
+            &[self.vault_state.vault_bump]
+        ];
+
+        let signer_seeds = &[&seeds[..]];
+
+        let cpi_ctx = CpiContext::new_with_signer(system_program, accounts, signer_seeds);
 
         assert!(self.vault.lamports() >= amount); //check there is balance in the vault
+        // TODO: require macro feels more natural here, but do you 
 
         transfer(cpi_ctx, amount)?;
 
