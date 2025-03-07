@@ -1,8 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_interface::{TokenInterface, Mint, TokenAccount},
-};
+use anchor_spl::token_interface::{TokenInterface, Mint};
 
 use crate::state::Config;
 
@@ -33,25 +30,8 @@ pub struct Initialize<'info> {
     )]
     pub mint_lp: Box<InterfaceAccount<'info, Mint>>,
 
-    #[account(
-      init, 
-      payer = initializer,
-      associated_token::mint = mint_x,
-      associated_token::authority = config
-    )]
-    pub vault_x: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    #[account(
-      init, 
-      payer = initializer,
-      associated_token::mint = mint_y,
-      associated_token::authority = config
-    )]
-    pub vault_y: Box<InterfaceAccount<'info, TokenAccount>>,
-
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 impl<'info> Initialize<'info> {
